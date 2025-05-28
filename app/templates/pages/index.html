@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="text-center mb-4" style="width: 100%; max-width: 600px;">
         <h1 class="mb-3">
             {% if city and request.method == 'GET' %}
-                Показать погоду в {{ city }} снова?
+            Показать погоду в {{ city }} снова?
             {% else %}
-                Введите город, чтобы узнать текущую погоду
+            Введите город, чтобы узнать текущую погоду
             {% endif %}
         </h1>
         <form method="POST" class="w-100">
