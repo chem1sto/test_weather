@@ -72,7 +72,7 @@ def search_cities(query):
                 "q": query,
                 "format": "json",
                 "addressdetails": 1,
-                "limit": 8,
+                "limit": 10,
                 "accept-language": "ru",
             },
             headers=GEO_URL_HEADERS,
