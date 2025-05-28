@@ -1,22 +1,33 @@
 {% extends "base.html" %}
-{% block title %}Узнайте погоду в городе{% endblock %}
+{% block title %}Узнайте погоду в любом городе{% endblock %}
 {% block content %}
 <div class="d-flex flex-column align-items-center justify-content-center" style="height: 80vh;">
-    <h1 align="center">Введите город, чтобы узнать для него<br>ближайшую погоду</h1>
-    <form method="POST">
-        <div class="mb-3">
-            <input type="text" class="form-control" name="city" id="city"
-                   placeholder="Введите город" value="{{ city }}" list="cities">
-            <datalist id="cities"></datalist>
-        </div>
-        <button type="submit" class="btn btn-primary">Узнать погоду</button>
-    </form>
+    <div class="text-center mb-4" style="width: 100%; max-width: 600px;">
+        <h1 class="mb-3">
+            Введите город, чтобы узнать для него ближайшую погоду
+        </h1>
+        <form method="POST" class="w-100">
+            <div class="mb-3">
+                <input type="text"
+                       class="form-control form-control-lg"
+                       name="city"
+                       id="city"
+                       placeholder="Например: Москва, Санкт-Петербург, Новосибирск"
+                       value="{{ city }}"
+                       list="cities"
+                       style="width: 100%;">
+                <datalist id="cities"></datalist>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100">Узнать погоду</button>
+        </form>
+    </div>
     {% if weather %}
-    <div class="card mt-4">
-        <div class="card-body">
+    <div class="card mt-4" style="width: 100%; max-width: 600px;">
+        <div class="card-body text-center">
             <h2>Погода в городе {{ city }}</h2>
-            <p>Температура: {{ weather.current_weather.temperature }}°C</p>
-            <p>Скорость ветра: {{ weather.current_weather.windspeed }} км/ч</p>
+            <div class="display-4 mb-3"> Температура {{ weather.current_weather.temperature }}°C</div>
+            <p class="mb-1"><strong>Скорость ветра:</strong> {{ weather.current_weather.windspeed }} км/ч</p>
+            <p class="mb-1"><strong>Направление ветра:</strong> {{ weather.current_weather.winddirection }}°</p>
         </div>
     </div>
     {% endif %}
