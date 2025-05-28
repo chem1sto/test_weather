@@ -1,14 +1,22 @@
 """Модуль для настройки тестирования веб-приложения."""
 
-from unittest.mock import patch
 
-from app.utils import search_cities
+def test_index_route(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    response = client.post("/", data={"city": "Moscow"})
+    assert response.status_code == 200
+    assert b"Moscow" in response.data
+    with client.session_transaction() as session:
+        assert "last_city" in session
+        assert "history" in session
+        assert "Moscow" in session["history"]
 
 
-def test_search_cities():
-    with patch("requests.get") as mock_get:
-        mock_get.return_value.json.return_value = {
-            "results": [{"name": "Test", "country": "RU"}]
-        }
-        cities = search_cities("test")
-        assert len(cities) > 0
+def test_clear_history(client):
+    with client.session_transaction() as session:
+        session["history"] = ["Moscow", "London"]
+    response = client.get("/clear_history")
+    assert response.status_code == 302
+    with client.session_transaction() as session:
+        assert "history" not in session

@@ -44,7 +44,7 @@ def index():
         city_stats[city.strip().title()] += 1
         weather_data = get_weather(city)
     logger.info(f"Загружена основная страница. Данные сессии: {session}")
-    return render_template(MAIN_PAGE, weather=weather_data, city=city.title())
+    return render_template(MAIN_PAGE, weather=weather_data, city=city)
 
 
 @main.route("/clear_history")
