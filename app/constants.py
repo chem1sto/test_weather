@@ -16,10 +16,7 @@ FLASK_SECRET_KEY = os.getenv(
     "FLASK_SECRET_KEY",
     "192b9bdd22ab9ed4d12e236c78afcb9a393ec15f71bbf5dc987d54727823bcbf",
 )
-GEO_URL = os.getenv(
-    "GEO_URL",
-    "https://nominatim.openstreetmap.org/search",
-)
+GEO_URL = "https://nominatim.openstreetmap.org/search"
 GEO_URL_HEADERS = {"User-Agent": "test_weather/1.0 (vladvasiliev52@gmail.com)"}
 GEO_RESPONSE_TIMEOUT = 5
 MAIN_PAGE = "/pages/index.html"

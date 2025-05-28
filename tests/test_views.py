@@ -16,7 +16,7 @@ def test_index_route(client):
 def test_clear_history(client):
     with client.session_transaction() as session:
         session["history"] = ["Moscow", "London"]
-    response = client.get("/clear_history")
+    response = client.get("/clear_history/")
     assert response.status_code == 302
     with client.session_transaction() as session:
         assert "history" not in session
