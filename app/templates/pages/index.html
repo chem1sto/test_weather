@@ -1,10 +1,51 @@
 {% extends "base.html" %}
 {% block title %}Узнайте погоду в любом городе{% endblock %}
+{% block head %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cityInput = document.getElementById('city');
+    const datalist = document.getElementById('cities');
+    const cityCache = {};
+    let debounceTimer;
+    function debounce(func, delay) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(func, delay);
+    }
+    cityInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query.length < 2) return;
+        debounce(() => {
+            if (cityCache[query]) {
+                updateDatalist(cityCache[query]);
+                return;
+            }
+            fetch(`/api/cities?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(cities => {
+                    datalist.innerHTML = '';
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.name;
+                        datalist.appendChild(option);
+                    });
+                .then(() => loading.style.display = 'none')
+                .catch(() => loading.style.display = 'none')
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    datalist.innerHTML = '<option value="Ошибка загрузки"></option>';
+                })
+        }, 300);
+        cityCache[query] = cities;
+    });
+});
+</script>
+{% endblock %}
 {% block content %}
 <div class="d-flex flex-column align-items-center justify-content-center" style="height: 80vh;">
     <div class="text-center mb-4" style="width: 100%; max-width: 600px;">
         <h1 class="mb-3">
-            Введите город, чтобы узнать для него ближайшую погоду
+            Введите город, чтобы текущую погоду в нём
         </h1>
         <form method="POST" class="w-100">
             <div class="mb-3">
@@ -15,7 +56,8 @@
                        placeholder="Например: Москва, Санкт-Петербург, Новосибирск"
                        value="{{ city }}"
                        list="cities"
-                       style="width: 100%;">
+                       style="width: 100%;"
+                       autocomplete="off">
                 <datalist id="cities"></datalist>
             </div>
             <button type="submit" class="btn btn-primary btn-lg w-100">Узнать погоду</button>

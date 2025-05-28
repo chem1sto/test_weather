@@ -21,18 +21,20 @@ def index():
     city = request.form.get("city") or session.get("last_city")
     session["history"].append(city)
     session.modified = True
+    logger.info(f"В сессию добавлен новый город: {city}")
     if city:
         weather_data = get_weather(city)
         if weather_data:
             session["last_city"] = city
+    logger.info(f"Загружена основная страница. Данные сессии: {session}")
     return render_template(MAIN_PAGE, weather=weather_data, city=city)
 
 
 @main.route("/api/cities", methods=["GET"])
 def city_autocomplete():
     """View-функция для автозаполнения городов в поиске."""
-    query = request.args.get("q")
-    if not query:
-        return []
+    query = request.args.get("q", "").strip()
+    if len(query) < 2:
+        return jsonify([])
     cities = search_cities(query)
     return jsonify(cities[:10])
