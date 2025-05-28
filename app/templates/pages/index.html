@@ -11,32 +11,57 @@ document.addEventListener('DOMContentLoaded', function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(func, delay);
     }
+    function updateDatalist(cities) {
+        datalist.innerHTML = '';
+        if (!cities || cities.length === 0) {
+            const option = document.createElement('option');
+            option.value = "Город не найден";
+            option.disabled = true;
+            datalist.appendChild(option);
+            return;
+        }
+        cities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city.name;
+            datalist.appendChild(option);
+        });
+    }
     cityInput.addEventListener('input', function() {
         const query = this.value.trim();
-        if (query.length < 2) return;
+        if (query.length < 2) {
+            datalist.innerHTML = '';
+            return;
+        }
         debounce(() => {
-            if (cityCache[query]) {
-                updateDatalist(cityCache[query]);
+            const normalizedQuery = query.toLowerCase();
+            if (cityCache[normalizedQuery]) {
+                updateDatalist(cityCache[normalizedQuery]);
                 return;
             }
             fetch(`/api/cities?q=${encodeURIComponent(query)}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(cities => {
-                    datalist.innerHTML = '';
-                    cities.forEach(city => {
-                        const option = document.createElement('option');
-                        option.value = city.name;
-                        datalist.appendChild(option);
-                    });
-                .then(() => loading.style.display = 'none')
-                .catch(() => loading.style.display = 'none')
+                    cityCache[normalizedQuery] = cities;
+                    updateDatalist(cities);
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    datalist.innerHTML = '<option value="Ошибка загрузки"></option>';
-                })
+                    console.error('Fetch error:', error);
+                    updateDatalist([]);
+                });
         }, 300);
-        cityCache[query] = cities;
+    });
+    cityInput.addEventListener('focus', function() {
+        if (this.value.length >= 2 && !datalist.hasChildNodes()) {
+            const query = this.value.trim();
+            if (cityCache[query.toLowerCase()]) {
+                updateDatalist(cityCache[query.toLowerCase()]);
+            }
+        }
     });
 });
 </script>
@@ -45,7 +70,11 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="d-flex flex-column align-items-center justify-content-center" style="height: 80vh;">
     <div class="text-center mb-4" style="width: 100%; max-width: 600px;">
         <h1 class="mb-3">
-            Введите город, чтобы текущую погоду в нём
+            {% if city and request.method == 'GET' %}
+                Показать погоду в {{ city }} снова?
+            {% else %}
+                Введите город, чтобы узнать текущую погоду
+            {% endif %}
         </h1>
         <form method="POST" class="w-100">
             <div class="mb-3">
@@ -54,24 +83,63 @@ document.addEventListener('DOMContentLoaded', function() {
                        name="city"
                        id="city"
                        placeholder="Например: Москва, Санкт-Петербург, Новосибирск"
-                       value="{{ city }}"
+                       value="{{ city if city else '' }}"
                        list="cities"
                        style="width: 100%;"
                        autocomplete="off">
-                <datalist id="cities"></datalist>
+                <datalist id="cities">
+                    {% if cities %}
+                        {% for city in cities %}
+                            <option value="{{ city.name }}"></option>
+                        {% endfor %}
+                    {% endif %}
+                </datalist>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg w-100">Узнать погоду</button>
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                {% if city and request.method == 'GET' %}Показать снова{% else %}Узнать погоду{% endif %}
+            </button>
         </form>
+        {% if 'history' in session and session.history|length > 1 %}
+        <div class="mt-3">
+            <p>Или выберите из истории:</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                {% for hist_city in session.history[-5:]|reverse %}
+                    {% if hist_city != city %}
+                    <form method="POST" class="d-inline">
+                        <input type="hidden" name="city" value="{{ hist_city }}">
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                            {{ hist_city }}
+                        </button>
+                    </form>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
     {% if weather %}
-    <div class="card mt-4" style="width: 100%; max-width: 600px;">
-        <div class="card-body text-center">
-            <h2>Погода в городе {{ city }}</h2>
-            <div class="display-4 mb-3"> Температура {{ weather.current_weather.temperature }}°C</div>
-            <p class="mb-1"><strong>Скорость ветра:</strong> {{ weather.current_weather.windspeed }} км/ч</p>
-            <p class="mb-1"><strong>Направление ветра:</strong> {{ weather.current_weather.winddirection }}°</p>
+        {% if weather.error %}
+            <div class="alert alert-danger mt-4 d-flex flex-wrap justify-content-center" style="width: 100%; max-width: 600px;">
+                <p align="center">{{ weather.error }}</p>
+                <div class="mt-2">
+                    <form method="POST">
+                        <input type="hidden" name="city" value="{{ city }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            Попробовать снова
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+        <div class="card mt-4" style="width: 100%; max-width: 600px;">
+            <div class="card-body text-center">
+                <h2>Погода в городе {{ city }}</h2>
+                <div class="display-4 mb-3"> Температура {{ weather.current_weather.temperature }}°C</div>
+                <p class="mb-1"><strong>Скорость ветра:</strong> {{ weather.current_weather.windspeed }} км/ч</p>
+                <p class="mb-1"><strong>Направление ветра:</strong> {{ weather.current_weather.winddirection }}°</p>
+            </div>
         </div>
-    </div>
+        {% endif %}
     {% endif %}
 </div>
 {% endblock %}

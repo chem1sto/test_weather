@@ -16,9 +16,9 @@ FLASK_SECRET_KEY = os.getenv(
 )
 GEO_URL = os.getenv(
     "GEO_URL",
-    "https://geocoding-api.open-meteo.com/v1/search?name={city_name}",
+    "https://nominatim.openstreetmap.org/search",
 )
-WEATHER_URL = (
-    "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude="
-    "{lon}&current_weather=true"
-)
+GEO_URL_HEADERS = {"User-Agent": "test_weather/1.0 (vladvasiliev52@gmail.com)"}
+GEO_RESPONSE_TIMEOUT = 5
+WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
+WEATHER_RESPONSE_TIMEOUT = 5

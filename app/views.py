@@ -2,7 +2,15 @@
 
 import logging
 
-from flask import Blueprint, jsonify, render_template, request, session
+from flask import (
+    Blueprint,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 
 from app.utils import get_weather, search_cities
 from config import MAIN_PAGE
@@ -16,18 +24,32 @@ main = Blueprint("main", __name__)
 def index():
     """View-функция для обработки данных и рендеринга главной страницы."""
     weather_data = None
+    city = request.form.get("city") or session.get("last_city")
     if "history" not in session:
         session["history"] = []
-    city = request.form.get("city") or session.get("last_city")
-    session["history"].append(city)
-    session.modified = True
-    logger.info(f"В сессию добавлен новый город: {city}")
-    if city:
+    if request.method == "POST" and city:
+        normalized_city = city.strip().title()
+        if normalized_city not in session["history"]:
+            session["history"].append(normalized_city)
+        session["last_city"] = normalized_city
+        session.modified = True
+        weather_data = get_weather(normalized_city)
+    elif request.method == "GET" and "last_city" in session:
+        city = session["last_city"]
         weather_data = get_weather(city)
-        if weather_data:
-            session["last_city"] = city
     logger.info(f"Загружена основная страница. Данные сессии: {session}")
-    return render_template(MAIN_PAGE, weather=weather_data, city=city)
+    return render_template(MAIN_PAGE, weather=weather_data, city=city.title())
+
+
+@main.route("/clear_history")
+def clear_history():
+    if "history" in session:
+        session.pop("history")
+        session.modified = True
+        logger.info(
+            f"История запросов по городам очищена. Данные сессии: {session}"
+        )
+    return redirect(url_for("main.index"))
 
 
 @main.route("/api/cities", methods=["GET"])
@@ -37,4 +59,10 @@ def city_autocomplete():
     if len(query) < 2:
         return jsonify([])
     cities = search_cities(query)
-    return jsonify(cities[:10])
+    unique_cities = []
+    seen = set()
+    for city in cities:
+        if city["name"] not in seen:
+            seen.add(city["name"])
+            unique_cities.append(city)
+    return jsonify(unique_cities[:8])
