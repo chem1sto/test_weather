@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% block title %}Узнайте погоду в городе{% endblock %}
 {% block content %}
 <div class="d-flex flex-column align-items-center justify-content-center" style="height: 80vh;">
-    <h1>Проверьте погоду</h1>
+    <h1 align="center">Введите город, чтобы узнать для него<br>ближайшую погоду</h1>
     <form method="POST">
         <div class="mb-3">
             <input type="text" class="form-control" name="city" id="city"
@@ -13,7 +14,7 @@
     {% if weather %}
     <div class="card mt-4">
         <div class="card-body">
-            <h2>Погода в {{ city }}</h2>
+            <h2>Погода в городе {{ city }}</h2>
             <p>Температура: {{ weather.current_weather.temperature }}°C</p>
             <p>Скорость ветра: {{ weather.current_weather.windspeed }} км/ч</p>
         </div>
