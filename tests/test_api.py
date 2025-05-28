@@ -5,7 +5,7 @@ from unittest.mock import patch
 from app.views import city_stats
 
 
-@patch("app.views.search_cities")
+@patch("app.api.search_cities")
 def test_city_autocomplete(mock_search, client):
     mock_search.return_value = [{"name": "Moscow", "country": "RU"}]
     response = client.get("/api/cities/?q=a")

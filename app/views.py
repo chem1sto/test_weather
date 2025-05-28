@@ -5,7 +5,6 @@ from collections import defaultdict
 
 from flask import (
     Blueprint,
-    jsonify,
     redirect,
     render_template,
     request,
@@ -14,17 +13,17 @@ from flask import (
 )
 
 from app.constants import MAIN_PAGE
-from app.utils import get_weather, search_cities
+from app.utils import get_weather
 
 logger = logging.getLogger(__name__)
 
-main = Blueprint("main", __name__)
+views_bp = Blueprint("views_bp", __name__)
 
 
 city_stats = defaultdict(int)
 
 
-@main.route("/", methods=["GET", "POST"])
+@views_bp.route("/", methods=["GET", "POST"])
 def index():
     """Обработка данных и рендеринг главной страницы."""
     weather_data = None
@@ -47,7 +46,7 @@ def index():
     return render_template(MAIN_PAGE, weather=weather_data, city=city)
 
 
-@main.route("/clear_history/")
+@views_bp.route("/clear_history/")
 def clear_history():
     """Обработка эндпоинта для очистки данных сессии."""
     if "history" in session:
@@ -56,28 +55,4 @@ def clear_history():
         logger.info(
             f"История запросов по городам очищена. Данные сессии: {session}"
         )
-    return redirect(url_for("main.index"))
-
-
-@main.route("/api/cities/", methods=["GET"])
-def city_autocomplete():
-    """Автозаполнение названия городов в форме поиска."""
-    query = request.args.get("q", "").strip()
-    if len(query) < 2:
-        return jsonify([])
-    cities = search_cities(query)
-    unique_cities = []
-    seen = set()
-    for city in cities:
-        if city["name"] not in seen:
-            seen.add(city["name"])
-            unique_cities.append(city)
-    return jsonify(unique_cities)
-
-
-@main.route("/api/city_stats/", methods=["GET"])
-def get_city_stats():
-    """Возвращает статистику запросов городов."""
-    return jsonify(
-        dict(sorted(city_stats.items(), key=lambda x: x[1], reverse=True))
-    )
+    return redirect(url_for("views_bp.index"))
