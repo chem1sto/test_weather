@@ -13,8 +13,8 @@ from flask import (
     url_for,
 )
 
+from app.constants import MAIN_PAGE
 from app.utils import get_weather, search_cities
-from config import MAIN_PAGE
 
 logger = logging.getLogger(__name__)
 

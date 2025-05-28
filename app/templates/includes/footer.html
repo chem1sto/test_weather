@@ -4,7 +4,12 @@
   </p>
   <p class="m-0">
     <small class="text-muted">
-      Скорость загрузки информации о погоде: {{ weather.generationtime_ms }} мс
+      Скорость загрузки информации о погоде:
+      {% if weather %}
+        {{ weather.generationtime_ms }} мс
+      {% else %}
+        нет данных
+      {% endif %}
     </small>
   </p>
 </div>

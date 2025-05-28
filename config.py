@@ -2,10 +2,6 @@
 
 from app.constants import FLASK_DEBUG, FLASK_RUN_PORT, FLASK_SECRET_KEY
 
-ERROR_PAGE_404 = "404.html"
-ERROR_PAGE_505 = "505.html"
-MAIN_PAGE = "/pages/index.html"
-
 
 class Config(object):
     FLASK_DEBUG = FLASK_DEBUG
