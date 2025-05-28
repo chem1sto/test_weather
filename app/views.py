@@ -5,6 +5,7 @@ import logging
 from flask import Blueprint, render_template, request, session
 
 from app.utils import get_weather
+from config import MAIN_PAGE
 
 logger = logging.getLogger(__name__)
 
@@ -19,4 +20,4 @@ def index():
         weather_data = get_weather(city)
         if weather_data:
             session["last_city"] = city
-    return render_template("index.html", weather=weather_data, city=city)
+    return render_template(MAIN_PAGE, weather=weather_data, city=city)

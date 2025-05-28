@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center" style="height: 80vh;">
+    <h1>Проверьте погоду</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <input type="text" class="form-control" name="city" id="city"
+                   placeholder="Введите город" value="{{ city }}" list="cities">
+            <datalist id="cities"></datalist>
+        </div>
+        <button type="submit" class="btn btn-primary">Узнать погоду</button>
+    </form>
+    {% if weather %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h2>Погода в {{ city }}</h2>
+            <p>Температура: {{ weather.current_weather.temperature }}°C</p>
+            <p>Скорость ветра: {{ weather.current_weather.windspeed }} км/ч</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
